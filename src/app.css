@@ -1,0 +1,194 @@
+:root {
+	--bg: #f4f6fb;
+	--card: #ffffff;
+	--ink: #1c2434;
+	--muted: #6b7688;
+	--accent: #3b6ef5;
+	--border: #e2e6ef;
+	font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--ink);
+}
+
+.shell {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 0 16px 64px;
+}
+
+header {
+	padding: 20px 0;
+}
+
+.brand {
+	font-size: 20px;
+	font-weight: 700;
+	text-decoration: none;
+	color: var(--ink);
+}
+
+h1 {
+	font-size: 24px;
+}
+
+.card {
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 20px;
+	margin-bottom: 16px;
+}
+
+label {
+	display: block;
+	font-size: 13px;
+	color: var(--muted);
+	margin-bottom: 4px;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='date'] {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	font-size: 15px;
+	margin-bottom: 14px;
+}
+
+button {
+	background: var(--accent);
+	color: #fff;
+	border: 0;
+	border-radius: 8px;
+	padding: 10px 16px;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+button.ghost {
+	background: transparent;
+	color: var(--accent);
+	padding: 4px 8px;
+}
+
+a {
+	color: var(--accent);
+}
+
+.row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 0;
+}
+
+.row.done .item-name {
+	text-decoration: line-through;
+	color: var(--muted);
+}
+
+.row .item-name {
+	flex: 1;
+	margin: 0;
+	font-size: 16px;
+	color: var(--ink);
+}
+
+.drag-handle {
+	cursor: grab;
+	color: var(--muted);
+	font-size: 18px;
+	line-height: 1;
+	padding: 4px 2px;
+	touch-action: none;
+	user-select: none;
+}
+
+.drag-handle:active {
+	cursor: grabbing;
+}
+
+.items {
+	outline: none;
+}
+
+.row-sep {
+	padding: 6px 0;
+}
+
+.divider-line {
+	flex: 1;
+	border: 0;
+	border-top: 2px solid var(--ink);
+	margin: 0;
+	opacity: 0.35;
+}
+
+.add-extras {
+	display: flex;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.add-extras button {
+	font-size: 13px;
+	border: 1px dashed var(--border);
+	border-radius: 8px;
+}
+
+.inline-form {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.inline-form input {
+	flex: 1;
+	min-width: 0;
+	margin-bottom: 0;
+}
+
+.inline-form button {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+.error {
+	color: #d33;
+	font-size: 14px;
+	margin-bottom: 12px;
+}
+
+.muted {
+	color: var(--muted);
+}
+
+.list-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 20px;
+	padding-top: 14px;
+	border-top: 1px solid var(--border);
+}
+
+button.ghost:disabled {
+	color: var(--muted);
+	cursor: default;
+}
+
+button.danger {
+	color: #d33;
+}
