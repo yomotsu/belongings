@@ -188,8 +188,8 @@ a {
 
 .collapse-icon {
 	flex-shrink: 0;
-	color: var(--muted);
-	font-size: 14px;
+	color: var(--ink);
+	font-size: 22px;
 	line-height: 1;
 }
 
