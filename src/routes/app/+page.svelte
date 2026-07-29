@@ -145,6 +145,13 @@
 
 	}
 
+	function renameDivider( item: Item ) {
+
+		item.name = item.name.trim();
+		post( 'renameItem', { itemId: item.id, name: item.name } );
+
+	}
+
 	function deleteRow( item: Item ) {
 
 		items = items.filter( ( i ) => i.id !== item.id );
@@ -268,7 +275,12 @@
 				{#if item.kind === 'divider'}
 					<div class="row row-sep">
 						<span class="drag-handle" use:dragHandle aria-label="ドラッグして並び替え">⠿</span>
-						<hr class="divider-line" />
+						<input
+							class="divider-label"
+							placeholder="ラベル（任意）"
+							bind:value={item.name}
+							onchange={() => renameDivider( item )}
+						/>
 						<button class="ghost" type="button" aria-label="削除" onclick={() => deleteRow( item )}>✕</button>
 					</div>
 				{:else}
