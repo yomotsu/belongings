@@ -376,10 +376,10 @@
 		</div>
 
 		<div class="divider-adder">
-			<span class="divider-adder-label">セクション区切りを追加</span>
+			<span class="divider-adder-label">区切りを追加</span>
 			<form class="add-extras" onsubmit={( e ) => { e.preventDefault(); addDivider(); }}>
 				<input class="divider-input" bind:value={newDivider} placeholder="ラベル（任意・後から変更不可）" />
-				<button class="ghost" type="submit">＋ 罫線</button>
+				<button type="submit">追加</button>
 			</form>
 		</div>
 

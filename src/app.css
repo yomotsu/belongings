@@ -270,10 +270,7 @@ a {
 
 .add-extras button {
 	flex-shrink: 0;
-	font-size: 13px;
-	border: 1px solid var(--border);
-	border-radius: 8px;
-	background: var(--card);
+	white-space: nowrap;
 }
 
 .divider-input {
