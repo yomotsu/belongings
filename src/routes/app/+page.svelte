@@ -359,18 +359,21 @@
 			{/each}
 		</section>
 
-		<form onsubmit={addItem} class="inline-form">
-			<input type="text" bind:value={newItem} placeholder="持ち物を追加（例：パスポート）" required />
-			<button
-				type="button"
-				class="important-toggle"
-				class:on={newImportant}
-				aria-pressed={newImportant}
-				title="大事なもの"
-				onclick={() => ( newImportant = ! newImportant )}
-			>★ 大事</button>
-			<button type="submit">追加</button>
-		</form>
+		<div class="item-adder">
+			<span class="item-adder-label">持ち物を追加</span>
+			<form onsubmit={addItem} class="inline-form">
+				<input type="text" bind:value={newItem} placeholder="例：パスポート" required />
+				<button
+					type="button"
+					class="important-toggle"
+					class:on={newImportant}
+					aria-pressed={newImportant}
+					title="大事なもの"
+					onclick={() => ( newImportant = ! newImportant )}
+				>★ 大事</button>
+				<button type="submit">追加</button>
+			</form>
+		</div>
 
 		<div class="divider-adder">
 			<span class="divider-adder-label">セクション区切りを追加</span>

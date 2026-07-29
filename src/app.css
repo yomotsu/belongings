@@ -233,21 +233,34 @@ a {
 	min-width: 0;
 }
 
-/* 罫線追加は「区切りを挿入するツール」として、破線枠＋淡い背景の
-   ボックスに隔離し、持ち物追加（主要動作）と視覚的に分ける。 */
+/* 追加系はそれぞれ枠付きボックスに。持ち物追加（主要動作）は実線＋カード背景、
+   罫線追加（区切り挿入ツール）は破線＋淡い背景で、別機能だと分かるようにする。 */
+.item-adder {
+	margin-top: 16px;
+	padding: 12px;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	background: var(--card);
+}
+
 .divider-adder {
-	margin-top: 20px;
+	margin-top: 12px;
 	padding: 12px;
 	border: 1px dashed var(--border);
 	border-radius: 10px;
 	background: var(--bg);
 }
 
+.item-adder-label,
 .divider-adder-label {
 	display: block;
 	font-size: 12px;
 	color: var(--muted);
 	margin-bottom: 8px;
+}
+
+.item-adder .inline-form {
+	margin-top: 0;
 }
 
 .add-extras {
