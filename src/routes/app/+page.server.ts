@@ -266,4 +266,27 @@ export const actions: Actions = {
 
 	},
 
+	setCollapsed: async ( { request, locals, platform } ) => {
+
+		if ( ! locals.user ) return fail( 401, { message: 'ログインが必要です' } );
+
+		const form = await request.formData();
+		const itemId = String( form.get( 'itemId' ) ?? '' );
+		const collapsed = form.get( 'collapsed' ) === 'true';
+
+		const d = db( platform! );
+
+		const owned = await d.select( { id: items.id } ).from( items )
+			.innerJoin( lists, eq( items.listId, lists.id ) )
+			.where( and( eq( items.id, itemId ), eq( lists.userId, locals.user.id ) ) )
+			.get();
+
+		if ( ! owned ) return fail( 403, { message: '権限がありません' } );
+
+		await d.update( items ).set( { collapsed } ).where( eq( items.id, itemId ) );
+
+		return { success: true };
+
+	},
+
 };

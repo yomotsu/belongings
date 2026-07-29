@@ -68,6 +68,8 @@ export const items = sqliteTable( 'items', {
 	kind: text( 'kind' ).notNull().default( 'item' ),
 	checked: integer( 'checked', { mode: 'boolean' } ).notNull().default( false ),
 	important: integer( 'important', { mode: 'boolean' } ).notNull().default( false ),
+	// divider only: 折りたたみ状態。true のとき次の罫線までの項目を隠す。
+	collapsed: integer( 'collapsed', { mode: 'boolean' } ).notNull().default( false ),
 	position: integer( 'position' ).notNull().default( 0 ),
 	createdAt: integer( 'created_at', { mode: 'timestamp' } ).notNull(),
 } );

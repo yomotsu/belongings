@@ -163,6 +163,26 @@ a {
 	padding: 6px 0;
 }
 
+.row.hidden {
+	display: none;
+}
+
+.collapse-toggle {
+	flex-shrink: 0;
+	background: transparent;
+	border: 0;
+	color: var(--muted);
+	font-size: 14px;
+	line-height: 1;
+	padding: 4px 6px;
+	cursor: pointer;
+}
+
+.section-count {
+	flex-shrink: 0;
+	font-size: 12px;
+}
+
 /* A divider is an optional-label heading whose bottom border is the rule line.
    No type attribute, so the global input[type='text'] styles don't apply. */
 .divider-label {

@@ -27,6 +27,47 @@
 	let remaining = $derived( packItems.filter( ( i ) => ! i.checked ).length );
 	let checkedCount = $derived( packItems.length - remaining );
 
+	// 折りたたまれた罫線の配下（次の罫線まで）の項目idと、罫線ごとの配下件数。
+	let hiddenIds = $derived.by( () => {
+
+		const hidden = new Set<string>();
+		let collapsed = false;
+
+		for ( const it of items ) {
+
+			if ( it.kind === 'divider' ) collapsed = it.collapsed;
+			else if ( collapsed ) hidden.add( it.id );
+
+		}
+
+		return hidden;
+
+	} );
+
+	let sectionCounts = $derived.by( () => {
+
+		const counts = new Map<string, number>();
+		let dividerId: string | null = null;
+
+		for ( const it of items ) {
+
+			if ( it.kind === 'divider' ) {
+
+				dividerId = it.id;
+				counts.set( dividerId, 0 );
+
+			} else if ( dividerId ) {
+
+				counts.set( dividerId, ( counts.get( dividerId ) ?? 0 ) + 1 );
+
+			}
+
+		}
+
+		return counts;
+
+	} );
+
 	let newItem = $state( '' );
 	let newImportant = $state( false );
 	let newList = $state( '' );
@@ -126,7 +167,7 @@
 
 		const id = crypto.randomUUID();
 		const important = newImportant;
-		items = [ ...items, { id, listId: selectedList.id, name, kind: 'item', checked: false, important, position: nextPosition(), createdAt: new Date() } ];
+		items = [ ...items, { id, listId: selectedList.id, name, kind: 'item', checked: false, important, collapsed: false, position: nextPosition(), createdAt: new Date() } ];
 		newItem = '';
 		newImportant = false;
 
@@ -139,7 +180,7 @@
 		if ( ! selectedList ) return;
 
 		const id = crypto.randomUUID();
-		items = [ ...items, { id, listId: selectedList.id, name: '', kind: 'divider', checked: false, important: false, position: nextPosition(), createdAt: new Date() } ];
+		items = [ ...items, { id, listId: selectedList.id, name: '', kind: 'divider', checked: false, important: false, collapsed: false, position: nextPosition(), createdAt: new Date() } ];
 
 		post( 'createItem', { id, listId: selectedList.id, kind: 'divider' } );
 
@@ -149,6 +190,13 @@
 
 		item.name = item.name.trim();
 		post( 'renameItem', { itemId: item.id, name: item.name } );
+
+	}
+
+	function toggleCollapse( item: Item ) {
+
+		item.collapsed = ! item.collapsed;
+		post( 'setCollapsed', { itemId: item.id, collapsed: item.collapsed.toString() } );
 
 	}
 
@@ -275,16 +323,26 @@
 				{#if item.kind === 'divider'}
 					<div class="row row-sep">
 						<span class="drag-handle" use:dragHandle aria-label="ドラッグして並び替え">⠿</span>
+						<button
+							type="button"
+							class="collapse-toggle"
+							aria-expanded={! item.collapsed}
+							title={item.collapsed ? '展開' : '折りたたむ'}
+							onclick={() => toggleCollapse( item )}
+						>{item.collapsed ? '▸' : '▾'}</button>
 						<input
 							class="divider-label"
 							placeholder="ラベル（任意）"
 							bind:value={item.name}
 							onchange={() => renameDivider( item )}
 						/>
+						{#if item.collapsed}
+							<span class="muted section-count">{sectionCounts.get( item.id ) ?? 0}件</span>
+						{/if}
 						<button class="ghost" type="button" aria-label="削除" onclick={() => deleteRow( item )}>✕</button>
 					</div>
 				{:else}
-					<div class="row" class:done={item.checked}>
+					<div class="row" class:done={item.checked} class:hidden={hiddenIds.has( item.id )}>
 						<span class="drag-handle" use:dragHandle aria-label="ドラッグして並び替え">⠿</span>
 						<label class="item-label">
 							<input
