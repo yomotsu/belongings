@@ -112,6 +112,12 @@ a {
 	cursor: pointer;
 }
 
+.reorder-link {
+	margin-top: 8px;
+	text-align: right;
+	font-size: 13px;
+}
+
 .row .item-name {
 	flex: 1;
 	margin: 0;

@@ -95,8 +95,6 @@
 		{/each}
 	</select>
 
-	<a href="/app/lists">リストの並び替え</a>
-
 	<form
 		method="POST"
 		action="?/createList"
@@ -111,6 +109,10 @@
 		<input type="text" name="name" bind:value={newList} placeholder="新しいリスト（例：沖縄 / 出張 / キャンプ）" required />
 		<button type="submit">追加</button>
 	</form>
+
+	<div class="reorder-link">
+		<a href="/app/lists">リストの並び替え</a>
+	</div>
 
 	{#if form?.message}
 		<p class="error">{form.message}</p>
