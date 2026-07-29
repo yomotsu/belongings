@@ -38,6 +38,15 @@
 		}
 
 	}
+
+	// パスワード再設定は未実装（メール送信基盤が未確定）。
+	// 導線は残しつつ、クリック時は準備中を知らせて遷移させない。
+	function forgotPassword( event: MouseEvent ) {
+
+		event.preventDefault();
+		alert( 'パスワードの再設定は現在準備中です。お手数ですが管理者にご連絡ください。' );
+
+	}
 </script>
 
 <h1>ログイン</h1>
@@ -52,6 +61,6 @@
 	<input id="password" type="password" bind:value={password} required />
 
 	<button type="submit" disabled={loading}>{loading ? 'ログイン中…' : 'ログイン'}</button>
-	<p class="muted" style="margin-top:12px;"><a href="/forgot-password">パスワードをお忘れですか？</a></p>
+	<p class="muted" style="margin-top:12px;"><a href="/forgot-password" onclick={forgotPassword}>パスワードをお忘れですか？</a></p>
 	<p class="muted">アカウントがありませんか？ <a href="/signup">新規登録</a></p>
 </form>
