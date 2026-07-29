@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ( { locals, platform, url } ) => {
 
 	const myLists = await d.select().from( lists )
 		.where( eq( lists.userId, locals.user.id ) )
-		.orderBy( lists.createdAt );
+		.orderBy( lists.position, lists.createdAt );
 
 	const selectedId = url.searchParams.get( 'list' ) ?? myLists[ 0 ]?.id ?? null;
 
@@ -67,11 +67,26 @@ export const actions: Actions = {
 
 		if ( ! name ) return fail( 400, { message: 'リスト名を入力してください' } );
 
+		const d = db( platform! );
+
+		// Reject a duplicate name for this user (case-insensitive).
+		const dup = await d.select( { id: lists.id } ).from( lists )
+			.where( and( eq( lists.userId, locals.user.id ), sql`lower(${lists.name}) = lower(${name})` ) )
+			.get();
+
+		if ( dup ) return fail( 409, { message: '同じ名前のリストが既にあります' } );
+
+		// Append to the end of the user's lists.
+		const last = await d.select( { max: sql<number>`COALESCE(MAX(${lists.position}), -1)` } ).from( lists )
+			.where( eq( lists.userId, locals.user.id ) )
+			.get();
+
 		const id = crypto.randomUUID();
-		await db( platform! ).insert( lists ).values( {
+		await d.insert( lists ).values( {
 			id,
 			userId: locals.user.id,
 			name,
+			position: ( last?.max ?? -1 ) + 1,
 			createdAt: new Date(),
 		} );
 

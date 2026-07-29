@@ -4,9 +4,9 @@
 	import { goto } from '$app/navigation';
 	import { dragHandleZone, dragHandle, type DndEvent } from 'svelte-dnd-action';
 	import type { Item } from '$lib/server/db/schema';
-	import type { PageData } from './$types';
+	import type { PageData, ActionData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let selectedList = $derived( data.lists.find( ( l ) => l.id === data.selectedId ) ?? null );
 
@@ -28,6 +28,7 @@
 	let checkedCount = $derived( packItems.length - remaining );
 
 	let newItem = $state( '' );
+	let newList = $state( '' );
 
 	// Refresh data without navigating (keeps scroll position) and without
 	// resetting form controls (avoids a checkbox flicker on toggle).
@@ -94,10 +95,26 @@
 		{/each}
 	</select>
 
-	<form method="POST" action="?/createList" use:enhance class="inline-form">
-		<input type="text" name="name" placeholder="新しいリスト（例：沖縄 / 出張 / キャンプ）" required />
+	<a href="/app/lists">リストの並び替え</a>
+
+	<form
+		method="POST"
+		action="?/createList"
+		use:enhance={() => async ( { result, update } ) => {
+
+			if ( result.type !== 'failure' ) newList = '';
+			await update();
+
+		}}
+		class="inline-form"
+	>
+		<input type="text" name="name" bind:value={newList} placeholder="新しいリスト（例：沖縄 / 出張 / キャンプ）" required />
 		<button type="submit">追加</button>
 	</form>
+
+	{#if form?.message}
+		<p class="error">{form.message}</p>
+	{/if}
 </div>
 
 {#if selectedList}

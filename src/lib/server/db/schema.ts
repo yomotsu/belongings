@@ -56,6 +56,7 @@ export const lists = sqliteTable( 'lists', {
 	id: text( 'id' ).primaryKey(),
 	userId: text( 'user_id' ).notNull().references( () => user.id, { onDelete: 'cascade' } ),
 	name: text( 'name' ).notNull(),
+	position: integer( 'position' ).notNull().default( 0 ),
 	createdAt: integer( 'created_at', { mode: 'timestamp' } ).notNull(),
 } );
 
