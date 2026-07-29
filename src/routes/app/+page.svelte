@@ -323,21 +323,23 @@
 						<span class="drag-handle" use:dragHandle aria-label="ドラッグして並び替え">⠿</span>
 						<button
 							type="button"
-							class="collapse-toggle"
+							class="divider-toggle"
 							aria-expanded={! item.collapsed}
 							title={item.collapsed ? '展開' : '折りたたむ'}
 							onclick={() => toggleCollapse( item )}
-						>{item.collapsed ? '▸' : '▾'}</button>
-						<span class="divider-label">
-							{#if item.name}
-								<span class="divider-rule lead"></span>
-								<span class="divider-text">{item.name}</span>
+						>
+							<span class="collapse-icon">{item.collapsed ? '▸' : '▾'}</span>
+							<span class="divider-label">
+								{#if item.name}
+									<span class="divider-rule lead"></span>
+									<span class="divider-text">{item.name}</span>
+								{/if}
+								<span class="divider-rule fill"></span>
+							</span>
+							{#if item.collapsed}
+								<span class="muted section-count">{sectionCounts.get( item.id ) ?? 0}件</span>
 							{/if}
-							<span class="divider-rule fill"></span>
-						</span>
-						{#if item.collapsed}
-							<span class="muted section-count">{sectionCounts.get( item.id ) ?? 0}件</span>
-						{/if}
+						</button>
 						<button class="ghost" type="button" aria-label="削除" onclick={() => deleteRow( item )}>✕</button>
 					</div>
 				{:else}
