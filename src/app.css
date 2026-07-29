@@ -43,7 +43,7 @@ h1 {
 	background: var(--card);
 	border: 1px solid var(--border);
 	border-radius: 12px;
-	padding: 20px;
+	padding: 14px;
 	margin-bottom: 16px;
 }
 
@@ -59,11 +59,16 @@ input[type='email'],
 input[type='password'],
 input[type='date'] {
 	width: 100%;
-	padding: 10px 12px;
+	padding: 10px 10px;
 	border: 1px solid var(--border);
 	border-radius: 8px;
-	font-size: 15px;
+	/* 16px は iOS で入力時の自動ズームを防ぐため。 */
+	font-size: 16px;
 	margin-bottom: 14px;
+}
+
+input::placeholder {
+	font-size: 14px;
 }
 
 button {
@@ -132,7 +137,8 @@ a {
 	border: 1px solid var(--border);
 	color: var(--muted);
 	white-space: nowrap;
-	font-size: 13px;
+	font-size: 14px;
+	padding: 8px 8px;
 }
 
 .important-toggle.on {
@@ -269,16 +275,19 @@ a {
 .add-extras button {
 	flex-shrink: 0;
 	white-space: nowrap;
+	padding: 10px 12px;
+	font-size: 14px;
 }
 
 .divider-input {
 	flex: 1;
 	min-width: 0;
-	padding: 8px 10px;
+	padding: 10px 8px;
 	border: 1px solid var(--border);
 	border-radius: 8px;
 	background: var(--card);
-	font-size: 14px;
+	/* 16px は iOS で入力時の自動ズームを防ぐため。 */
+	font-size: 16px;
 }
 
 .inline-form {
@@ -296,6 +305,8 @@ a {
 .inline-form button {
 	flex-shrink: 0;
 	white-space: nowrap;
+	padding: 10px 12px;
+	font-size: 14px;
 }
 
 .error {
