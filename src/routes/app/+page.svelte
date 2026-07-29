@@ -370,10 +370,13 @@
 			<button type="submit">追加</button>
 		</form>
 
-		<form class="add-extras" onsubmit={( e ) => { e.preventDefault(); addDivider(); }}>
-			<input class="divider-input" bind:value={newDivider} placeholder="罫線を追加（ラベルは任意・後から変更不可）" />
-			<button class="ghost" type="submit">＋ 罫線</button>
-		</form>
+		<div class="divider-adder">
+			<span class="divider-adder-label">セクション区切りを追加</span>
+			<form class="add-extras" onsubmit={( e ) => { e.preventDefault(); addDivider(); }}>
+				<input class="divider-input" bind:value={newDivider} placeholder="ラベル（任意・後から変更不可）" />
+				<button class="ghost" type="submit">＋ 罫線</button>
+			</form>
+		</div>
 
 		<div class="list-footer">
 			<button class="ghost" type="button" onclick={resetAllChecks} disabled={checkedCount === 0 && ! hasCollapsed}>✓ 全部外す（旅行後にリセット）</button>
