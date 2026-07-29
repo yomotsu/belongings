@@ -15,7 +15,7 @@
 		{
 			"binding": "DB",
 			"database_name": "belongings-db",
-			"database_id": "local-dev-placeholder",
+			"database_id": "089eda1b-191d-4b30-acb0-acf82449b05b",
 			"migrations_dir": "drizzle"
 		}
 	]
