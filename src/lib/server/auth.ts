@@ -26,6 +26,12 @@ export function createAuth( env: App.Platform['env'] ) {
 		emailAndPassword: {
 			enabled: true,
 		},
+		session: {
+			// 旅行アプリは間隔を空けて開くので長めに保持。訪問のたびに
+			// 有効期限を延長（スライディング）するので、実質ログインしっぱなし。
+			expiresIn: 60 * 60 * 24 * 180, // 180日
+			updateAge: 60 * 60 * 24, // 1日ごとに延長
+		},
 	} );
 
 }
