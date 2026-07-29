@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { authClient } from '$lib/auth-client';
-	import { goto } from '$app/navigation';
+	import { goto, beforeNavigate } from '$app/navigation';
 	import { dragHandleZone, dragHandle, type DndEvent } from 'svelte-dnd-action';
 	import type { Item } from '$lib/server/db/schema';
 	import type { PageData, ActionData } from './$types';
@@ -30,10 +30,76 @@
 	let newItem = $state( '' );
 	let newList = $state( '' );
 
+	// --- チェックのDB同期をdebounce ---------------------------------------
+	// トグルはUIに即反映し、DB書き込みだけ遅延させる。連打しても項目ごとに
+	// 最終状態が1回だけ書き込まれる。
+	const pendingChecks = new Map<string, boolean>();
+	let flushTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function toggleCheck( item: Item, next: boolean ) {
+
+		item.checked = next;
+		pendingChecks.set( item.id, next );
+
+		clearTimeout( flushTimer );
+		flushTimer = setTimeout( flushChecks, 600 );
+
+	}
+
+	async function flushChecks( useBeacon = false ) {
+
+		clearTimeout( flushTimer );
+
+		if ( pendingChecks.size === 0 ) return;
+
+		const changes = [ ...pendingChecks.entries() ];
+		pendingChecks.clear();
+
+		const jobs = [];
+
+		for ( const [ itemId, checked ] of changes ) {
+
+			const body = new FormData();
+			body.set( 'itemId', itemId );
+			body.set( 'checked', checked.toString() );
+
+			if ( useBeacon && navigator.sendBeacon ) {
+
+				navigator.sendBeacon( '?/toggleItem', body );
+
+			} else {
+
+				jobs.push( fetch( '?/toggleItem', {
+					method: 'POST',
+					body,
+					headers: { 'x-sveltekit-action': 'true' },
+				} ) );
+
+			}
+
+		}
+
+		await Promise.all( jobs );
+
+	}
+
+	// 画面遷移・タブを閉じる前に未同期のチェックを確実に書き込む。
+	beforeNavigate( () => flushChecks( true ) );
+
+	$effect( () => {
+
+		const handler = () => flushChecks( true );
+		window.addEventListener( 'pagehide', handler );
+		return () => window.removeEventListener( 'pagehide', handler );
+
+	} );
+
 	// Refresh data without navigating (keeps scroll position) and without
 	// resetting form controls (avoids a checkbox flicker on toggle).
+	// 未同期のチェックを先に書き込んでから再取得し、楽観的更新の巻き戻しを防ぐ。
 	const keepScroll = () => async ( { update }: { update: ( o?: { reset?: boolean } ) => Promise<void> } ) => {
 
+		await flushChecks();
 		await update( { reset: false } );
 
 	};
@@ -106,7 +172,7 @@
 		}}
 		class="inline-form"
 	>
-		<input type="text" name="name" bind:value={newList} placeholder="新しいリスト（例：沖縄 / 出張 / キャンプ）" required />
+		<input type="text" name="name" bind:value={newList} placeholder="新しいリスト（例：海外旅行 / 出張 / キャンプ）" required />
 		<button type="submit">追加</button>
 	</form>
 
@@ -149,18 +215,14 @@
 				{:else}
 					<div class="row" class:done={item.checked}>
 						<span class="drag-handle" use:dragHandle aria-label="ドラッグして並び替え">⠿</span>
-						<form method="POST" action="?/toggleItem" use:enhance={keepScroll} class="item-toggle">
-							<input type="hidden" name="itemId" value={item.id} />
-							<input type="hidden" name="checked" value={( ! item.checked ).toString()} />
-							<label class="item-label">
-								<input
-									type="checkbox"
-									checked={item.checked}
-									onchange={( e ) => ( e.currentTarget as HTMLInputElement ).form?.requestSubmit()}
-								/>
-								<span class="item-name">{item.name}</span>
-							</label>
-						</form>
+						<label class="item-label">
+							<input
+								type="checkbox"
+								checked={item.checked}
+								onchange={( e ) => toggleCheck( item, ( e.currentTarget as HTMLInputElement ).checked )}
+							/>
+							<span class="item-name">{item.name}</span>
+						</label>
 						<form method="POST" action="?/deleteItem" use:enhance={keepScroll}>
 							<input type="hidden" name="itemId" value={item.id} />
 							<button class="ghost" type="submit" aria-label="削除">✕</button>
@@ -176,6 +238,7 @@
 			use:enhance={() => async ( { update } ) => {
 
 				newItem = '';
+				await flushChecks();
 				await update( { reset: false } );
 
 			}}

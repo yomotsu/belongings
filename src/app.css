@@ -99,17 +99,14 @@ a {
 	color: var(--muted);
 }
 
-/* The toggle form + label fill the row so clicking the name also checks it. */
-.item-toggle {
-	flex: 1;
-	min-width: 0;
-}
-
+/* The label fills the row so clicking the name also checks it. */
 .item-label {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	cursor: pointer;
+	flex: 1;
+	min-width: 0;
 }
 
 .reorder-link {
