@@ -362,7 +362,7 @@
 		<div class="item-adder">
 			<span class="item-adder-label">持ち物を追加</span>
 			<form onsubmit={addItem} class="inline-form">
-				<input type="text" bind:value={newItem} placeholder="例：パスポート" required />
+				<input type="text" bind:value={newItem} placeholder="例:財布" required />
 				<button
 					type="button"
 					class="important-toggle"
@@ -378,7 +378,7 @@
 		<div class="divider-adder">
 			<span class="divider-adder-label">区切りを追加</span>
 			<form class="add-extras" onsubmit={( e ) => { e.preventDefault(); addDivider(); }}>
-				<input class="divider-input" bind:value={newDivider} placeholder="ラベル（任意・後から変更不可）" />
+				<input class="divider-input" bind:value={newDivider} placeholder="例:雨具" />
 				<button type="submit">追加</button>
 			</form>
 		</div>
