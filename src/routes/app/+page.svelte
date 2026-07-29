@@ -70,6 +70,7 @@
 
 	let newItem = $state( '' );
 	let newImportant = $state( false );
+	let newDivider = $state( '' );
 	let newList = $state( '' );
 
 	// --- チェックのDB同期をdebounce ---------------------------------------
@@ -180,16 +181,11 @@
 		if ( ! selectedList ) return;
 
 		const id = crypto.randomUUID();
-		items = [ ...items, { id, listId: selectedList.id, name: '', kind: 'divider', checked: false, important: false, collapsed: false, position: nextPosition(), createdAt: new Date() } ];
+		const name = newDivider.trim();
+		items = [ ...items, { id, listId: selectedList.id, name, kind: 'divider', checked: false, important: false, collapsed: false, position: nextPosition(), createdAt: new Date() } ];
+		newDivider = '';
 
-		post( 'createItem', { id, listId: selectedList.id, kind: 'divider' } );
-
-	}
-
-	function renameDivider( item: Item ) {
-
-		item.name = item.name.trim();
-		post( 'renameItem', { itemId: item.id, name: item.name } );
+		post( 'createItem', { id, listId: selectedList.id, kind: 'divider', name } );
 
 	}
 
@@ -330,12 +326,13 @@
 							title={item.collapsed ? '展開' : '折りたたむ'}
 							onclick={() => toggleCollapse( item )}
 						>{item.collapsed ? '▸' : '▾'}</button>
-						<input
-							class="divider-label"
-							placeholder="ラベル（任意）"
-							bind:value={item.name}
-							onchange={() => renameDivider( item )}
-						/>
+						<span class="divider-label">
+							{#if item.name}
+								<span class="divider-rule lead"></span>
+								<span class="divider-text">{item.name}</span>
+							{/if}
+							<span class="divider-rule fill"></span>
+						</span>
 						{#if item.collapsed}
 							<span class="muted section-count">{sectionCounts.get( item.id ) ?? 0}件</span>
 						{/if}
@@ -371,9 +368,10 @@
 			<button type="submit">追加</button>
 		</form>
 
-		<div class="add-extras">
-			<button class="ghost" type="button" onclick={addDivider}>＋ 罫線</button>
-		</div>
+		<form class="add-extras" onsubmit={( e ) => { e.preventDefault(); addDivider(); }}>
+			<input class="divider-input" bind:value={newDivider} placeholder="罫線を追加（ラベルは任意・後から変更不可）" />
+			<button class="ghost" type="submit">＋ 罫線</button>
+		</form>
 
 		<div class="list-footer">
 			<button class="ghost" type="button" onclick={resetAllChecks} disabled={checkedCount === 0}>✓ 全部外す（旅行後にリセット）</button>

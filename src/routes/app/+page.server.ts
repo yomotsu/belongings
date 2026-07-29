@@ -140,7 +140,7 @@ export const actions: Actions = {
 		await d.insert( items ).values( {
 			id: providedId || crypto.randomUUID(),
 			listId,
-			name: kind === 'item' ? name : '',
+			name,
 			kind,
 			checked: false,
 			important,
@@ -237,30 +237,6 @@ export const actions: Actions = {
 
 		// Reuse the list for the next trip: clear every check.
 		await d.update( items ).set( { checked: false } ).where( eq( items.listId, listId ) );
-
-		return { success: true };
-
-	},
-
-	renameItem: async ( { request, locals, platform } ) => {
-
-		if ( ! locals.user ) return fail( 401, { message: 'ログインが必要です' } );
-
-		const form = await request.formData();
-		const itemId = String( form.get( 'itemId' ) ?? '' );
-		const name = String( form.get( 'name' ) ?? '' ).trim();
-
-		const d = db( platform! );
-
-		// Join guard: only rename items on lists owned by the user.
-		const owned = await d.select( { id: items.id } ).from( items )
-			.innerJoin( lists, eq( items.listId, lists.id ) )
-			.where( and( eq( items.id, itemId ), eq( lists.userId, locals.user.id ) ) )
-			.get();
-
-		if ( ! owned ) return fail( 403, { message: '権限がありません' } );
-
-		await d.update( items ).set( { name } ).where( eq( items.id, itemId ) );
 
 		return { success: true };
 

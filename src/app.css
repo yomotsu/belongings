@@ -183,31 +183,39 @@ a {
 	font-size: 12px;
 }
 
-/* A divider is an optional-label heading whose bottom border is the rule line.
-   No type attribute, so the global input[type='text'] styles don't apply. */
+/* A divider renders as a rule line with an optional label inset into it:
+   ─── ラベル ─────────────────────  (set once at creation, shown as static text) */
 .divider-label {
 	flex: 1;
 	min-width: 0;
-	width: auto;
-	border: 0;
-	border-bottom: 2px solid var(--border);
-	border-radius: 0;
-	background: transparent;
-	margin: 0;
-	padding: 4px 2px;
-	font-size: 13px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.divider-rule {
+	height: 0;
+	border-top: 2px solid var(--border);
+}
+
+.divider-rule.fill {
+	flex: 1;
+}
+
+.divider-rule.lead {
+	width: 20px;
+	flex-shrink: 0;
+}
+
+.divider-text {
+	flex-shrink: 0;
+	font-size: 12px;
 	font-weight: 700;
 	color: var(--muted);
-}
-
-.divider-label:focus {
-	outline: none;
-	border-bottom-color: var(--accent);
-}
-
-.divider-label::placeholder {
-	font-weight: 400;
-	color: var(--border);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
 }
 
 .add-extras {
@@ -217,9 +225,19 @@ a {
 }
 
 .add-extras button {
+	flex-shrink: 0;
 	font-size: 13px;
 	border: 1px dashed var(--border);
 	border-radius: 8px;
+}
+
+.divider-input {
+	flex: 1;
+	min-width: 0;
+	padding: 8px 10px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	font-size: 14px;
 }
 
 .inline-form {
