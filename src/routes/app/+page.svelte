@@ -147,16 +147,18 @@
 				{:else}
 					<div class="row" class:done={item.checked}>
 						<span class="drag-handle" use:dragHandle aria-label="ドラッグして並び替え">⠿</span>
-						<form method="POST" action="?/toggleItem" use:enhance={keepScroll}>
+						<form method="POST" action="?/toggleItem" use:enhance={keepScroll} class="item-toggle">
 							<input type="hidden" name="itemId" value={item.id} />
 							<input type="hidden" name="checked" value={( ! item.checked ).toString()} />
-							<input
-								type="checkbox"
-								checked={item.checked}
-								onchange={( e ) => ( e.currentTarget as HTMLInputElement ).form?.requestSubmit()}
-							/>
+							<label class="item-label">
+								<input
+									type="checkbox"
+									checked={item.checked}
+									onchange={( e ) => ( e.currentTarget as HTMLInputElement ).form?.requestSubmit()}
+								/>
+								<span class="item-name">{item.name}</span>
+							</label>
 						</form>
-						<span class="item-name">{item.name}</span>
 						<form method="POST" action="?/deleteItem" use:enhance={keepScroll}>
 							<input type="hidden" name="itemId" value={item.id} />
 							<button class="ghost" type="submit" aria-label="削除">✕</button>
