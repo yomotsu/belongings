@@ -133,8 +133,11 @@ export const actions: Actions = {
 			.where( eq( items.listId, listId ) )
 			.get();
 
+		// Accept a client-generated id so optimistic UI and DB rows stay in sync.
+		const providedId = String( form.get( 'id' ) ?? '' ).trim();
+
 		await d.insert( items ).values( {
-			id: crypto.randomUUID(),
+			id: providedId || crypto.randomUUID(),
 			listId,
 			name: kind === 'item' ? name : '',
 			kind,

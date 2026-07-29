@@ -94,15 +94,74 @@
 
 	} );
 
-	// Refresh data without navigating (keeps scroll position) and without
-	// resetting form controls (avoids a checkbox flicker on toggle).
-	// 未同期のチェックを先に書き込んでから再取得し、楽観的更新の巻き戻しを防ぐ。
-	const keepScroll = () => async ( { update }: { update: ( o?: { reset?: boolean } ) => Promise<void> } ) => {
+	// --- 持ち物カードは楽観的更新 + fire-and-forget --------------------------
+	// 追加・削除・全部外すは即座にローカルへ反映し、DB書き込みは投げっぱなし。
+	// invalidateAll で再取得しないので往復待ちが無く、体感が即時になる。
+	function nextPosition() {
 
-		await flushChecks();
-		await update( { reset: false } );
+		return items.reduce( ( max, i ) => Math.max( max, i.position ), -1 ) + 1;
 
-	};
+	}
+
+	function post( action: string, fields: Record<string, string> ) {
+
+		const body = new FormData();
+		for ( const [ key, value ] of Object.entries( fields ) ) body.set( key, value );
+
+		return fetch( `?/${action}`, {
+			method: 'POST',
+			body,
+			headers: { 'x-sveltekit-action': 'true' },
+		} );
+
+	}
+
+	function addItem( e: SubmitEvent ) {
+
+		e.preventDefault();
+
+		const name = newItem.trim();
+		if ( ! name || ! selectedList ) return;
+
+		const id = crypto.randomUUID();
+		items = [ ...items, { id, listId: selectedList.id, name, kind: 'item', checked: false, position: nextPosition(), createdAt: new Date() } ];
+		newItem = '';
+
+		post( 'createItem', { id, listId: selectedList.id, name } );
+
+	}
+
+	function addDivider() {
+
+		if ( ! selectedList ) return;
+
+		const id = crypto.randomUUID();
+		items = [ ...items, { id, listId: selectedList.id, name: '', kind: 'divider', checked: false, position: nextPosition(), createdAt: new Date() } ];
+
+		post( 'createItem', { id, listId: selectedList.id, kind: 'divider' } );
+
+	}
+
+	function deleteRow( item: Item ) {
+
+		items = items.filter( ( i ) => i.id !== item.id );
+		pendingChecks.delete( item.id );
+
+		post( 'deleteItem', { itemId: item.id } );
+
+	}
+
+	function resetAllChecks() {
+
+		if ( ! selectedList ) return;
+
+		items = items.map( ( i ) => i.kind === 'item' ? { ...i, checked: false } : i );
+		pendingChecks.clear();
+		clearTimeout( flushTimer );
+
+		post( 'resetChecks', { listId: selectedList.id } );
+
+	}
 
 	function handleConsider( e: CustomEvent<DndEvent<Item>> ) {
 
@@ -207,10 +266,7 @@
 					<div class="row row-sep">
 						<span class="drag-handle" use:dragHandle aria-label="ドラッグして並び替え">⠿</span>
 						<hr class="divider-line" />
-						<form method="POST" action="?/deleteItem" use:enhance={keepScroll}>
-							<input type="hidden" name="itemId" value={item.id} />
-							<button class="ghost" type="submit" aria-label="削除">✕</button>
-						</form>
+						<button class="ghost" type="button" aria-label="削除" onclick={() => deleteRow( item )}>✕</button>
 					</div>
 				{:else}
 					<div class="row" class:done={item.checked}>
@@ -223,45 +279,23 @@
 							/>
 							<span class="item-name">{item.name}</span>
 						</label>
-						<form method="POST" action="?/deleteItem" use:enhance={keepScroll}>
-							<input type="hidden" name="itemId" value={item.id} />
-							<button class="ghost" type="submit" aria-label="削除">✕</button>
-						</form>
+						<button class="ghost" type="button" aria-label="削除" onclick={() => deleteRow( item )}>✕</button>
 					</div>
 				{/if}
 			{/each}
 		</section>
 
-		<form
-			method="POST"
-			action="?/createItem"
-			use:enhance={() => async ( { update } ) => {
-
-				newItem = '';
-				await flushChecks();
-				await update( { reset: false } );
-
-			}}
-			class="inline-form"
-		>
-			<input type="hidden" name="listId" value={selectedList.id} />
-			<input type="text" name="name" bind:value={newItem} placeholder="持ち物を追加（例：パスポート）" required />
+		<form onsubmit={addItem} class="inline-form">
+			<input type="text" bind:value={newItem} placeholder="持ち物を追加（例：パスポート）" required />
 			<button type="submit">追加</button>
 		</form>
 
 		<div class="add-extras">
-			<form method="POST" action="?/createItem" use:enhance={keepScroll}>
-				<input type="hidden" name="listId" value={selectedList.id} />
-				<input type="hidden" name="kind" value="divider" />
-				<button class="ghost" type="submit">＋ 罫線</button>
-			</form>
+			<button class="ghost" type="button" onclick={addDivider}>＋ 罫線</button>
 		</div>
 
 		<div class="list-footer">
-			<form method="POST" action="?/resetChecks" use:enhance={keepScroll}>
-				<input type="hidden" name="listId" value={selectedList.id} />
-				<button class="ghost" type="submit" disabled={checkedCount === 0}>✓ 全部外す（旅行後にリセット）</button>
-			</form>
+			<button class="ghost" type="button" onclick={resetAllChecks} disabled={checkedCount === 0}>✓ 全部外す（旅行後にリセット）</button>
 			<form
 				method="POST"
 				action="?/deleteList"
