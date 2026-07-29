@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { authClient } from '$lib/auth-client';
+	import { authErrorMessage } from '$lib/auth-errors';
 	import { goto } from '$app/navigation';
 
 	let name = $state( '' );
@@ -14,18 +15,28 @@
 		error = '';
 		loading = true;
 
-		const { error: err } = await authClient.signUp.email( { name, email, password } );
+		try {
 
-		loading = false;
+			const { error: err } = await authClient.signUp.email( { name, email, password } );
 
-		if ( err ) {
+			if ( err ) {
 
-			error = err.message ?? '登録に失敗しました';
-			return;
+				error = authErrorMessage( err, '登録に失敗しました' );
+				return;
+
+			}
+
+			await goto( '/app' );
+
+		} catch {
+
+			error = '通信エラーが発生しました。接続を確認して再度お試しください';
+
+		} finally {
+
+			loading = false;
 
 		}
-
-		await goto( '/app' );
 
 	}
 </script>
