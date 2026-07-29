@@ -26,6 +26,7 @@
 	let packItems = $derived( items.filter( ( i ) => i.kind === 'item' ) );
 	let remaining = $derived( packItems.filter( ( i ) => ! i.checked ).length );
 	let checkedCount = $derived( packItems.length - remaining );
+	let hasCollapsed = $derived( items.some( ( i ) => i.kind === 'divider' && i.collapsed ) );
 
 	// 折りたたまれた罫線の配下（次の罫線まで）の項目idと、罫線ごとの配下件数。
 	let hiddenIds = $derived.by( () => {
@@ -209,7 +210,8 @@
 
 		if ( ! selectedList ) return;
 
-		items = items.map( ( i ) => i.kind === 'item' ? { ...i, checked: false } : i );
+		// チェックを外し、折りたたみもすべて展開する。
+		items = items.map( ( i ) => ( { ...i, checked: false, collapsed: false } ) );
 		pendingChecks.clear();
 		clearTimeout( flushTimer );
 
@@ -374,7 +376,7 @@
 		</form>
 
 		<div class="list-footer">
-			<button class="ghost" type="button" onclick={resetAllChecks} disabled={checkedCount === 0}>✓ 全部外す（旅行後にリセット）</button>
+			<button class="ghost" type="button" onclick={resetAllChecks} disabled={checkedCount === 0 && ! hasCollapsed}>✓ 全部外す（旅行後にリセット）</button>
 			<form
 				method="POST"
 				action="?/deleteList"

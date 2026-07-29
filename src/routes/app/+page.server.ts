@@ -235,8 +235,8 @@ export const actions: Actions = {
 
 		if ( ! ( await ownedList( d, listId, locals.user.id ) ) ) return fail( 403, { message: '権限がありません' } );
 
-		// Reuse the list for the next trip: clear every check.
-		await d.update( items ).set( { checked: false } ).where( eq( items.listId, listId ) );
+		// Reuse the list for the next trip: clear every check and expand all sections.
+		await d.update( items ).set( { checked: false, collapsed: false } ).where( eq( items.listId, listId ) );
 
 		return { success: true };
 
