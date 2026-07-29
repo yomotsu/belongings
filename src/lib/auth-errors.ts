@@ -11,6 +11,7 @@ const MESSAGES: Record<string, string> = {
 	USER_NOT_FOUND: 'アカウントが見つかりません',
 	FAILED_TO_CREATE_USER: '登録に失敗しました。時間をおいて再度お試しください',
 	FAILED_TO_CREATE_SESSION: 'セッションの作成に失敗しました。再度お試しください',
+	INVALID_TOKEN: 'リンクが無効か、有効期限が切れています。再度お試しください',
 };
 
 type AuthError = { code?: string; message?: string } | null | undefined;

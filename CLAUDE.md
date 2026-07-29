@@ -10,6 +10,7 @@ SvelteKit(Svelte 5) + Cloudflare Workers + D1 + Drizzle + Better Auth。概要�
   → **スキーマ変更は「`drizzle/` にマイグレーション追加 → push」だけで本番 D1 に自動適用**される。
 - 本番 D1: `belongings-db`（`wrangler.jsonc` の `database_id` は本番のもの）。
 - シークレット `BETTER_AUTH_SECRET` は Worker の暗号化 Secret として設定済み。`BETTER_AUTH_URL` は未設定で良い（Better Auth がリクエスト元 URL を自動判定）。
+- パスワード再設定メールは **SendGrid**（`src/lib/server/email.ts` が HTTP API を `fetch`）。Worker Secret に `SENDGRID_API_KEY` と `MAIL_FROM`（送信元）を設定する。独自ドメインが無いので **Single Sender Verification** で送信元1件を認証して使う。**Secret 未設定時は実送信せず再設定リンクを `console.log` にフォールバック**（ローカル確認用）。パスワードリセットは Better Auth 標準の `verification` テーブルを使うので **DB マイグレーションは不要**。
 
 ## ローカル開発
 

@@ -8,6 +8,9 @@ export const user = sqliteTable( 'user', {
 	email: text( 'email' ).notNull().unique(),
 	emailVerified: integer( 'email_verified', { mode: 'boolean' } ).notNull().default( false ),
 	image: text( 'image' ),
+	// 最後に選んだリスト。ログイン・再訪時に前回のリストを復元するために保持する。
+	// 削除済みリストの id が残ることがあるので、読み出し側で所有チェックしてから使う。
+	lastListId: text( 'last_list_id' ),
 	createdAt: integer( 'created_at', { mode: 'timestamp' } ).notNull(),
 	updatedAt: integer( 'updated_at', { mode: 'timestamp' } ).notNull(),
 } );

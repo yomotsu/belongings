@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `last_list_id` text;

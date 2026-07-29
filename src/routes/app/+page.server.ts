@@ -1,14 +1,19 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { drizzle } from 'drizzle-orm/d1';
 import { and, eq, sql } from 'drizzle-orm';
-import { lists, items } from '$lib/server/db/schema';
+import { lists, items, user } from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
 
 function db( platform: App.Platform ) {
 
-	return drizzle( platform.env.DB, { schema: { lists, items } } );
+	return drizzle( platform.env.DB, { schema: { lists, items, user } } );
 
 }
+
+// 上限（クライアントの表示制御と二重で効かせる。ここが権威）。
+const MAX_LISTS = 16;
+const MAX_ITEMS = 32;
+const MAX_DIVIDERS = 8;
 
 export const load: PageServerLoad = async ( { locals, platform, url } ) => {
 
@@ -20,22 +25,35 @@ export const load: PageServerLoad = async ( { locals, platform, url } ) => {
 		.where( eq( lists.userId, locals.user.id ) )
 		.orderBy( lists.position, lists.createdAt );
 
-	const selectedId = url.searchParams.get( 'list' ) ?? myLists[ 0 ]?.id ?? null;
+	// 選択リストの優先順位: URL の ?list= → 前回選択（user.lastListId）→ 先頭。
+	// URL 指定がなければ前回選択を復元するので、ログイン・再訪でも維持される。
+	const requested = url.searchParams.get( 'list' );
+	const owns = ( id: string | null ) => !! id && myLists.some( ( l ) => l.id === id );
+
+	const me = await d.select( { lastListId: user.lastListId } ).from( user )
+		.where( eq( user.id, locals.user.id ) )
+		.get();
+
+	const selectedId =
+		( owns( requested ) && requested ) ||
+		( owns( me?.lastListId ?? null ) && me!.lastListId ) ||
+		myLists[ 0 ]?.id ||
+		null;
+
+	// 解決した選択リストを次回のために保存（変化したときだけ書き込む）。
+	if ( selectedId && selectedId !== me?.lastListId ) {
+
+		await d.update( user ).set( { lastListId: selectedId } ).where( eq( user.id, locals.user.id ) );
+
+	}
 
 	let selectedItems: ( typeof items.$inferSelect )[] = [];
 
 	if ( selectedId ) {
 
-		// Verify the selected list belongs to the current user before reading items.
-		const owns = myLists.some( ( l ) => l.id === selectedId );
-
-		if ( owns ) {
-
-			selectedItems = await d.select().from( items )
-				.where( eq( items.listId, selectedId ) )
-				.orderBy( items.position, items.createdAt );
-
-		}
+		selectedItems = await d.select().from( items )
+			.where( eq( items.listId, selectedId ) )
+			.orderBy( items.position, items.createdAt );
 
 	}
 
@@ -75,6 +93,12 @@ export const actions: Actions = {
 			.get();
 
 		if ( dup ) return fail( 409, { message: '同じ名前のリストが既にあります' } );
+
+		const listCount = await d.select( { count: sql<number>`COUNT(*)` } ).from( lists )
+			.where( eq( lists.userId, locals.user.id ) )
+			.get();
+
+		if ( ( listCount?.count ?? 0 ) >= MAX_LISTS ) return fail( 409, { message: `リストは${MAX_LISTS}個までです` } );
 
 		// Append to the end of the user's lists.
 		const last = await d.select( { max: sql<number>`COALESCE(MAX(${lists.position}), -1)` } ).from( lists )
@@ -128,6 +152,13 @@ export const actions: Actions = {
 		const d = db( platform! );
 
 		if ( ! ( await ownedList( d, listId, locals.user.id ) ) ) return fail( 403, { message: '権限がありません' } );
+
+		const kindCount = await d.select( { count: sql<number>`COUNT(*)` } ).from( items )
+			.where( and( eq( items.listId, listId ), eq( items.kind, kind ) ) )
+			.get();
+
+		if ( kind === 'item' && ( kindCount?.count ?? 0 ) >= MAX_ITEMS ) return fail( 409, { message: `持ち物は${MAX_ITEMS}個までです` } );
+		if ( kind === 'divider' && ( kindCount?.count ?? 0 ) >= MAX_DIVIDERS ) return fail( 409, { message: `区切りは${MAX_DIVIDERS}個までです` } );
 
 		// Append to the end of the list.
 		const last = await d.select( { max: sql<number>`COALESCE(MAX(${items.position}), -1)` } ).from( items )

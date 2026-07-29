@@ -74,6 +74,17 @@
 	let newDivider = $state( '' );
 	let newList = $state( '' );
 
+	// 上限（サーバー側の MAX_LISTS / MAX_ITEMS / MAX_DIVIDERS と一致させる）。
+	const MAX_LISTS = 16;
+	const MAX_ITEMS = 32;
+	const MAX_DIVIDERS = 8;
+
+	let dividerCount = $derived( items.filter( ( i ) => i.kind === 'divider' ).length );
+
+	let atListLimit = $derived( data.lists.length >= MAX_LISTS );
+	let atItemLimit = $derived( packItems.length >= MAX_ITEMS );
+	let atDividerLimit = $derived( dividerCount >= MAX_DIVIDERS );
+
 	// --- チェックのDB同期をdebounce ---------------------------------------
 	// トグルはUIに即反映し、DB書き込みだけ遅延させる。連打しても項目ごとに
 	// 最終状態が1回だけ書き込まれる。
@@ -165,7 +176,7 @@
 		e.preventDefault();
 
 		const name = newItem.trim();
-		if ( ! name || ! selectedList ) return;
+		if ( ! name || ! selectedList || atItemLimit ) return;
 
 		const id = crypto.randomUUID();
 		const important = newImportant;
@@ -179,7 +190,7 @@
 
 	function addDivider() {
 
-		if ( ! selectedList ) return;
+		if ( ! selectedList || atDividerLimit ) return;
 
 		const id = crypto.randomUUID();
 		const name = newDivider.trim();
@@ -262,38 +273,43 @@
 </div>
 
 <div class="card">
-	<label for="list-select">リストを選ぶ（行き先・目的ごと）</label>
-	<select
-		id="list-select"
-		style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border);"
-		onchange={( e ) => goto( `/app?list=${( e.currentTarget as HTMLSelectElement ).value}` )}
-	>
-		{#if data.lists.length === 0}
-			<option>まだリストがありません</option>
-		{/if}
-		{#each data.lists as list (list.id)}
-			<option value={list.id} selected={list.id === data.selectedId}>{list.name}</option>
-		{/each}
-	</select>
+	{#if data.lists.length > 0}
+		<label for="list-select">リストを選ぶ（行き先・目的ごと）</label>
+		<select
+			id="list-select"
+			style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border);"
+			onchange={( e ) => goto( `/app?list=${( e.currentTarget as HTMLSelectElement ).value}` )}
+		>
+			{#each data.lists as list (list.id)}
+				<option value={list.id} selected={list.id === data.selectedId}>{list.name}</option>
+			{/each}
+		</select>
+	{/if}
 
-	<form
-		method="POST"
-		action="?/createList"
-		use:enhance={() => async ( { result, update } ) => {
+	{#if atListLimit}
+		<p class="muted">リストは {MAX_LISTS} 個までです。</p>
+	{:else}
+		<form
+			method="POST"
+			action="?/createList"
+			use:enhance={() => async ( { result, update } ) => {
 
-			if ( result.type !== 'failure' ) newList = '';
-			await update();
+				if ( result.type !== 'failure' ) newList = '';
+				await update();
 
-		}}
-		class="inline-form"
-	>
-		<input type="text" name="name" bind:value={newList} placeholder="新しいリスト（例：海外旅行 / 出張 / キャンプ）" required />
-		<button type="submit">追加</button>
-	</form>
+			}}
+			class="inline-form"
+		>
+			<input type="text" name="name" bind:value={newList} placeholder="新しいリスト（例：海外旅行 / 出張 / キャンプ）" required />
+			<button type="submit">追加</button>
+		</form>
+	{/if}
 
-	<div class="reorder-link">
-		<a href="/app/lists">リストの並び替え</a>
-	</div>
+	{#if data.lists.length > 0}
+		<div class="reorder-link">
+			<a href="/app/lists">リストの並び替え</a>
+		</div>
+	{/if}
 
 	{#if form?.message}
 		<p class="error">{form.message}</p>
@@ -361,27 +377,37 @@
 
 		<div class="item-adder">
 			<span class="item-adder-label">持ち物を追加</span>
-			<form onsubmit={addItem} class="inline-form">
-				<input type="text" bind:value={newItem} placeholder="例:財布" required />
-				<button
-					type="button"
-					class="important-toggle"
-					class:on={newImportant}
-					aria-pressed={newImportant}
-					title="大事なもの"
-					onclick={() => ( newImportant = ! newImportant )}
-				>★ 大事</button>
-				<button type="submit">追加</button>
-			</form>
+			{#if atItemLimit}
+				<p class="muted">持ち物は {MAX_ITEMS} 個までです。</p>
+			{:else}
+				<form onsubmit={addItem} class="inline-form">
+					<input type="text" bind:value={newItem} placeholder="例:財布" required />
+					<button
+						type="button"
+						class="important-toggle"
+						class:on={newImportant}
+						aria-pressed={newImportant}
+						title="大事なもの"
+						onclick={() => ( newImportant = ! newImportant )}
+					>★ 大事</button>
+					<button type="submit">追加</button>
+				</form>
+			{/if}
 		</div>
 
-		<div class="divider-adder">
-			<span class="divider-adder-label">区切りを追加</span>
-			<form class="add-extras" onsubmit={( e ) => { e.preventDefault(); addDivider(); }}>
-				<input class="divider-input" bind:value={newDivider} placeholder="例:雨具" />
-				<button type="submit">追加</button>
-			</form>
-		</div>
+		{#if packItems.length > 0}
+			<div class="divider-adder">
+				<span class="divider-adder-label">区切りを追加</span>
+				{#if atDividerLimit}
+					<p class="muted">区切りは {MAX_DIVIDERS} 個までです。</p>
+				{:else}
+					<form class="add-extras" onsubmit={( e ) => { e.preventDefault(); addDivider(); }}>
+						<input class="divider-input" bind:value={newDivider} placeholder="例:雨具" />
+						<button type="submit">追加</button>
+					</form>
+				{/if}
+			</div>
+		{/if}
 
 		<div class="list-footer">
 			<button class="ghost" type="button" onclick={resetAllChecks} disabled={checkedCount === 0 && ! hasCollapsed}>✓ 全部外す（旅行後にリセット）</button>

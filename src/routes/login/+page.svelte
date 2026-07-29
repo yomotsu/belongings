@@ -52,5 +52,6 @@
 	<input id="password" type="password" bind:value={password} required />
 
 	<button type="submit" disabled={loading}>{loading ? 'ログイン中…' : 'ログイン'}</button>
-	<p class="muted" style="margin-top:12px;">アカウントがありませんか？ <a href="/signup">新規登録</a></p>
+	<p class="muted" style="margin-top:12px;"><a href="/forgot-password">パスワードをお忘れですか？</a></p>
+	<p class="muted">アカウントがありませんか？ <a href="/signup">新規登録</a></p>
 </form>

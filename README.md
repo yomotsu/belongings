@@ -38,6 +38,8 @@ npm run dev                # http://localhost:5173
 
 `.dev.vars` に開発用の `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` が入っている（git 管理外）。
 
+パスワード再設定メール用に `SENDGRID_API_KEY` / `MAIL_FROM` も使う。**未設定なら実送信せず、再設定リンクをサーバのコンソールに出力する**（ローカルではこれで確認できる）。
+
 ## スキーマ変更の流れ
 
 1. `src/lib/server/db/schema.ts` を編集
@@ -57,6 +59,11 @@ npm run db:migrate:remote                        # 本番 D1 にスキーマ適�
 # 本番用シークレットを設定（32文字以上のランダム値）
 wrangler secret put BETTER_AUTH_SECRET
 wrangler secret put BETTER_AUTH_URL              # 例: https://belongings.<account>.workers.dev
+
+# パスワード再設定メール（SendGrid）。独自ドメインが無くても
+# Single Sender Verification で送信元アドレス1件を認証すれば送れる。
+wrangler secret put SENDGRID_API_KEY             # SendGrid の Mail Send 権限付き API Key
+wrangler secret put MAIL_FROM                    # 認証済みの送信元アドレス（例: you@example.com）
 ```
 
 以降は：
