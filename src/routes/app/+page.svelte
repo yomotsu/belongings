@@ -388,12 +388,24 @@
 			<form
 				method="POST"
 				action="?/deleteList"
-				use:enhance={() => ( { update } ) => {
+				use:enhance={( { cancel } ) => {
 
-					update();
+					// enhance は onsubmit の preventDefault を無視して送信するため、
+					// キャンセル時は必ず cancel() で送信自体を止める。
+					if ( ! confirm( 'このリストを削除しますか？' ) ) {
+
+						cancel();
+						return;
+
+					}
+
+					return async ( { update } ) => {
+
+						await update();
+
+					};
 
 				}}
-				onsubmit={( e ) => { if ( ! confirm( 'このリストを削除しますか？' ) ) e.preventDefault(); }}
 			>
 				<input type="hidden" name="listId" value={selectedList.id} />
 				<button class="ghost danger" type="submit">リストを削除</button>
