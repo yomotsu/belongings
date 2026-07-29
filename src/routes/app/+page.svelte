@@ -28,6 +28,7 @@
 	let checkedCount = $derived( packItems.length - remaining );
 
 	let newItem = $state( '' );
+	let newImportant = $state( false );
 	let newList = $state( '' );
 
 	// --- チェックのDB同期をdebounce ---------------------------------------
@@ -124,10 +125,12 @@
 		if ( ! name || ! selectedList ) return;
 
 		const id = crypto.randomUUID();
-		items = [ ...items, { id, listId: selectedList.id, name, kind: 'item', checked: false, position: nextPosition(), createdAt: new Date() } ];
+		const important = newImportant;
+		items = [ ...items, { id, listId: selectedList.id, name, kind: 'item', checked: false, important, position: nextPosition(), createdAt: new Date() } ];
 		newItem = '';
+		newImportant = false;
 
-		post( 'createItem', { id, listId: selectedList.id, name } );
+		post( 'createItem', { id, listId: selectedList.id, name, important: important.toString() } );
 
 	}
 
@@ -136,7 +139,7 @@
 		if ( ! selectedList ) return;
 
 		const id = crypto.randomUUID();
-		items = [ ...items, { id, listId: selectedList.id, name: '', kind: 'divider', checked: false, position: nextPosition(), createdAt: new Date() } ];
+		items = [ ...items, { id, listId: selectedList.id, name: '', kind: 'divider', checked: false, important: false, position: nextPosition(), createdAt: new Date() } ];
 
 		post( 'createItem', { id, listId: selectedList.id, kind: 'divider' } );
 
@@ -277,7 +280,7 @@
 								checked={item.checked}
 								onchange={( e ) => toggleCheck( item, ( e.currentTarget as HTMLInputElement ).checked )}
 							/>
-							<span class="item-name">{item.name}</span>
+							<span class="item-name" class:important={item.important}>{item.name}</span>
 						</label>
 						<button class="ghost" type="button" aria-label="削除" onclick={() => deleteRow( item )}>✕</button>
 					</div>
@@ -287,6 +290,14 @@
 
 		<form onsubmit={addItem} class="inline-form">
 			<input type="text" bind:value={newItem} placeholder="持ち物を追加（例：パスポート）" required />
+			<button
+				type="button"
+				class="important-toggle"
+				class:on={newImportant}
+				aria-pressed={newImportant}
+				title="大事なもの"
+				onclick={() => ( newImportant = ! newImportant )}
+			>★ 大事</button>
 			<button type="submit">追加</button>
 		</form>
 

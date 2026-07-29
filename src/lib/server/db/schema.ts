@@ -67,6 +67,7 @@ export const items = sqliteTable( 'items', {
 	name: text( 'name' ).notNull(),
 	kind: text( 'kind' ).notNull().default( 'item' ),
 	checked: integer( 'checked', { mode: 'boolean' } ).notNull().default( false ),
+	important: integer( 'important', { mode: 'boolean' } ).notNull().default( false ),
 	position: integer( 'position' ).notNull().default( 0 ),
 	createdAt: integer( 'created_at', { mode: 'timestamp' } ).notNull(),
 } );

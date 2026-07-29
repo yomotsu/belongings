@@ -120,6 +120,7 @@ export const actions: Actions = {
 		const name = String( form.get( 'name' ) ?? '' ).trim();
 		const kindInput = String( form.get( 'kind' ) ?? 'item' );
 		const kind = kindInput === 'divider' ? 'divider' : 'item';
+		const important = kind === 'item' && form.get( 'important' ) === 'true';
 
 		if ( ! listId ) return fail( 400, { message: 'リストが不明です' } );
 		if ( kind === 'item' && ! name ) return fail( 400, { message: '持ち物名を入力してください' } );
@@ -142,6 +143,7 @@ export const actions: Actions = {
 			name: kind === 'item' ? name : '',
 			kind,
 			checked: false,
+			important,
 			position: ( last?.max ?? -1 ) + 1,
 			createdAt: new Date(),
 		} );

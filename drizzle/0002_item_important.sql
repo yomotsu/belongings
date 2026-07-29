@@ -1,0 +1,1 @@
+ALTER TABLE `items` ADD `important` integer DEFAULT false NOT NULL;
