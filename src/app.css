@@ -323,11 +323,15 @@ a {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
-	justify-content: space-between;
 	align-items: center;
 	margin-top: 20px;
 	padding-top: 14px;
 	border-top: 1px solid var(--border);
+}
+
+/* 「リストを削除」は常に右寄せ。折り返してカラム落ちしても右に寄る。 */
+.list-footer form {
+	margin-left: auto;
 }
 
 button.ghost:disabled {
