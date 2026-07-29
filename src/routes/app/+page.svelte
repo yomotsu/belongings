@@ -42,7 +42,7 @@
 		pendingChecks.set( item.id, next );
 
 		clearTimeout( flushTimer );
-		flushTimer = setTimeout( flushChecks, 600 );
+		flushTimer = setTimeout( flushChecks, 1000 );
 
 	}
 
